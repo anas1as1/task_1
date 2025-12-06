@@ -27,17 +27,6 @@ check_access() {
     fi
 }
 
-  GNU nano 8.7                       script.sh                        Modified
-show_help() {
-    echo "Использование: $0 [OPTIONS]"
-    echo "  -u, --users       показать пользователей"
-    echo "  -p, --processes   показать процессы"
-    echo "  -l, --log FILE    выводить результат в файл"
-    echo "  -e, --errors FILE выводить ошибки в файл"
-    echo "  -h, --help        показать справку"
-    exit 0
-}
-
 check_access() {
     # Проверка возможности записи в указанный файл
     touch "$1" 2>/dev/null
@@ -63,5 +52,35 @@ while [[ $# -gt 0 ]]; do
         *)
             args+=("$1")
             shift ;;
+    esac
+done
+
+actions=()
+
+set -- "${args[@]}"
+
+[[ -n "$ERR_FILE" ]] && exec 2>"$ERR_FILE"
+[[ -n "$LOG_FILE" ]] && exec >"$LOG_FILE"
+
+OPTS=$(getopt -o uphl:e: --long users,processes,help,log:,errors: -n "script" -- "$@")
+[[ $? -ne 0 ]] && echo "Ошибка аргументов. Используйте -h." >&2 && exit 1
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        -u|--users)
+            actions+=("users")
+            shift ;;
+        -p|--processes)
+            actions+=("processes")
+            shift ;;
+        -h|--help)
+            actions+=("help")
+            shift ;;
+        -l|--log|-e|--errors)
+            shift 2 ;; # уже обработано
+        --)
+            shift ; break ;;
     esac
 done
