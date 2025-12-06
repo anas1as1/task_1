@@ -1,5 +1,10 @@
 #!/bin/bash
 
+LOG_FILE=""
+ERR_FILE=""
+actions=()
+args=()
+
 show_users() {
     cut -d: -f1,6 /etc/passwd | sort
 }
@@ -9,35 +14,22 @@ show_processes() {
 }
 
 show_help() {
-    echo "Использование: $0 [OPTIONS]"
-    echo "  -u, --users       показать пользователей"
-    echo "  -p, --processes   показать процессы"
-    echo "  -l, --log FILE    выводить результат в файл"
-    echo "  -e, --errors FILE выводить ошибки в файл"
-    echo "  -h, --help        показать справку"
+    echo "использование: $0 [options]"
+    echo "  u users       показать пользователей"
+    echo "  p processes   показать процессы"
+    echo "  l log FILE    выводить результат в файл"
+    echo "  e errors FILE выводить ошибки в файл"
+    echo "  h help        показать справку"
     exit 0
 }
 
 check_access() {
-    # Проверка возможности записи в указанный файл
     touch "$1" 2>/dev/null
     if [[ $? -ne 0 ]]; then
-        echo "Ошибка: нет доступа к файлу '$1'" >&2
+        echo "ошибка: нет доступа к файлу '$1'" >&2
         exit 1
     fi
 }
-
-check_access() {
-    # Проверка возможности записи в указанный файл
-    touch "$1" 2>/dev/null
-    if [[ $? -ne 0 ]]; then
-        echo "Ошибка: нет доступа к файлу '$1'" >&2
-        exit 1
-    fi
-}
-
-LOG_FILE=""
-ERR_FILE=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -55,15 +47,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-actions=()
-
 set -- "${args[@]}"
 
 [[ -n "$ERR_FILE" ]] && exec 2>"$ERR_FILE"
 [[ -n "$LOG_FILE" ]] && exec >"$LOG_FILE"
 
 OPTS=$(getopt -o uphl:e: --long users,processes,help,log:,errors: -n "script" -- "$@")
-[[ $? -ne 0 ]] && echo "Ошибка аргументов. Используйте -h." >&2 && exit 1
+[[ $? -ne 0 ]] && echo "ошибка аргументов. используйте h." >&2 && exit 1
 
 eval set -- "$OPTS"
 
@@ -79,8 +69,18 @@ while true; do
             actions+=("help")
             shift ;;
         -l|--log|-e|--errors)
-            shift 2 ;; # уже обработано
+            shift 2 ;;
         --)
             shift ; break ;;
+    esac
+done
+
+[[ ${#actions[@]} -eq 0 ]] && echo "нет команд. используйте h." >&2 && exit 1
+
+for act in "${actions[@]}"; do
+    case "$act" in
+        users) show_users ;;
+        processes) show_processes ;;
+        help) show_help ;;
     esac
 done
