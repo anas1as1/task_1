@@ -10,7 +10,7 @@ show_users() {
 }
 
 show_processes() {
-    ps -eo pid,cmd --sort=pid
+    ps -eo pid,comm --sort=pid
 }
 
 show_help() {
@@ -26,7 +26,7 @@ show_help() {
 check_access() {
     touch "$1" 2>/dev/null
     if [[ $? -ne 0 ]]; then
-        echo "ошибка: нет доступа к файлу '$1'" >&2
+        echo "ошибка: нет доступа к файлу '$1'. используйте -h." >&2
         exit 1
     fi
 }
@@ -52,7 +52,7 @@ done
 set -- "${args[@]}"
 
 OPTS=$(getopt -o uphl:e: --long users,processes,help,log:,errors: -n "script" -- "$@")
-[[ $? -ne 0 ]] && echo "ошибка аргументов. используйте h." >&2 && exit 1
+[[ $? -ne 0 ]] && echo "ошибка аргументов. используйте -h." >&2 && exit 1
 
 eval set -- "$OPTS"
 
@@ -74,7 +74,7 @@ while true; do
     esac
 done
 
-[[ ${#actions[@]} -eq 0 ]] && echo "нет команд. используйте h." >&2 && exit 1
+[[ ${#actions[@]} -eq 0 ]] && echo "нет команд. используйте -h." >&2 && exit 1
 
 for act in "${actions[@]}"; do
     case "$act" in
