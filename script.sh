@@ -36,10 +36,12 @@ while [[ $# -gt 0 ]]; do
         -l|--log)
             LOG_FILE="$2"
             check_access "$LOG_FILE"
+            exec >"$LOG_FILE"
             shift 2 ;;
         -e|--errors)
             ERR_FILE="$2"
             check_access "$ERR_FILE"
+            exec 2>"$ERR_FILE"
             shift 2 ;;
         *)
             args+=("$1")
@@ -48,9 +50,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 set -- "${args[@]}"
-
-[[ -n "$ERR_FILE" ]] && exec 2>"$ERR_FILE"
-[[ -n "$LOG_FILE" ]] && exec >"$LOG_FILE"
 
 OPTS=$(getopt -o uphl:e: --long users,processes,help,log:,errors: -n "script" -- "$@")
 [[ $? -ne 0 ]] && echo "ошибка аргументов. используйте h." >&2 && exit 1
