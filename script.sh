@@ -49,3 +49,19 @@ check_access() {
 
 LOG_FILE=""
 ERR_FILE=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -l|--log)
+            LOG_FILE="$2"
+            check_access "$LOG_FILE"
+            shift 2 ;;
+        -e|--errors)
+            ERR_FILE="$2"
+            check_access "$ERR_FILE"
+            shift 2 ;;
+        *)
+            args+=("$1")
+            shift ;;
+    esac
+done
